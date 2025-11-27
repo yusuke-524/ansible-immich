@@ -1,0 +1,10 @@
+#!/bin/bash
+# Ansible Vault 用パスワードファイル
+# 実行前に以下のコマンドで実行権限を付与してください
+# chmod 600 .vault_pass
+# このファイルは .gitignore に追加されています
+
+# このファイルに Vault パスワードを入力してください
+# 例: echo "vault_password" > .vault_pass
+
+# 注意：本番環境ではセキュアなパスワード管理を推奨します

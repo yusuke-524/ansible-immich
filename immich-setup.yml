@@ -1,0 +1,30 @@
+---
+# Immich セットアップ Playbook
+# VM内部のセットアップを自動化します
+
+- name: Immich VM セットアップ
+  hosts: immich_servers
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - immich-setup
+
+  post_tasks:
+    - name: Immich セットアップ完了メッセージ
+      debug:
+        msg: |
+          ===================================
+          Immich セットアップが完了しました
+          ===================================
+          
+          Web UI アクセス: {{ immich_server_url }}
+          マウントポイント: {{ immich_data_mount_point }}
+          
+          次のステップ：
+          1. ブラウザで Immich にアクセス
+          2. 管理者アカウントを設定
+          3. ユーザーアカウントを作成
+          4. ストレージ設定を確認
+          
+          ===================================

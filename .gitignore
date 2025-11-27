@@ -1,0 +1,19 @@
+# Ansible 実行生成物
+*.retry
+
+# 秘匿情報系
+vault_pass.txt
+*.vault.yml
+secrets/
+credentials/
+*.pem
+*.key
+
+# 個人情報を含むドキュメント
+docs_private/
+docs_private/**
+
+# ローカルだけでよいもの
+.idea/
+.vscode/
+*.log

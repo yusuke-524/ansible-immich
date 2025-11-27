@@ -1,0 +1,231 @@
+---
+# Tasks for Immich Setup
+
+# ====================
+# 1. システム準備
+# ====================
+
+- name: タイムゾーン設定
+  community.general.timezone:
+    name: "{{ timezone }}"
+
+- name: APT キャッシュサーバー設定
+  lineinfile:
+    path: /etc/apt/apt.conf.d/00proxy
+    line: 'Acquire::http::Proxy "http://{{ apt_cache_server }}:{{ apt_cache_port }}";'
+    create: yes
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: APT パッケージ更新
+  apt:
+    update_cache: yes
+    upgrade: yes
+    cache_valid_time: 3600
+
+- name: 必要なパッケージをインストール
+  apt:
+    name:
+      - nfs-common
+      - curl
+      - wget
+      - sudo
+      - qemu-guest-agent
+      - unattended-upgrades
+    state: present
+
+- name: qemu-guest-agent サービス有効化
+  systemd:
+    name: qemu-guest-agent
+    enabled: yes
+    state: started
+
+# ====================
+# 2. NFS マウント設定
+# ====================
+
+- name: NFS マウントポイントを作成
+  file:
+    path: "{{ immich_data_mount_point }}"
+    state: directory
+    owner: "{{ immich_user }}"
+    group: "{{ immich_group }}"
+    mode: '0755'
+
+- name: NFS マウント情報を /etc/fstab に追加
+  lineinfile:
+    path: /etc/fstab
+    line: "{{ nfs_server }}:{{ nfs_export_path }} {{ immich_data_mount_point }} nfs {{ nfs_mount_opts }} 0 0"
+    state: present
+    backup: yes
+
+- name: NFS マウント実行
+  shell: |
+    if ! mountpoint -q {{ immich_data_mount_point }}; then
+      mount {{ immich_data_mount_point }}
+    fi
+  changed_when: false
+
+- name: NFS マウント確認
+  shell: "mount | grep {{ immich_data_mount_point }}"
+  register: mount_check
+  failed_when: mount_check.rc != 0
+  changed_when: false
+
+# ====================
+# 3. Docker インストール
+# ====================
+
+- name: Docker 公式リポジトリの GPG キーを追加
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Docker リポジトリを追加
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: Docker CE をインストール
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
+    state: present
+
+- name: Docker サービス有効化
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: immich ユーザーを docker グループに追加
+  user:
+    name: "{{ immich_user }}"
+    groups: docker
+    append: yes
+
+# ====================
+# 4. Immich アプリケーションディレクトリ準備
+# ====================
+
+- name: Immich アプリケーションディレクトリを作成
+  file:
+    path: "{{ immich_app_dir }}"
+    state: directory
+    owner: "{{ immich_user }}"
+    group: "{{ immich_group }}"
+    mode: '0755'
+
+- name: docker-compose.yml をダウンロード
+  get_url:
+    url: https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+    dest: "{{ immich_app_dir }}/docker-compose.yml"
+    owner: "{{ immich_user }}"
+    group: "{{ immich_group }}"
+    mode: '0644'
+  register: compose_download
+
+- name: Immich 環境設定ファイルをテンプレートから生成
+  template:
+    src: immich-env.j2
+    dest: "{{ immich_app_dir }}/.env"
+    owner: "{{ immich_user }}"
+    group: "{{ immich_group }}"
+    mode: '0600'
+  register: env_config
+
+# ====================
+# 5. Immich systemd サービス設定
+# ====================
+
+- name: Immich systemd サービスを生成
+  template:
+    src: immich-systemd.service.j2
+    dest: /etc/systemd/system/immich.service
+    owner: root
+    group: root
+    mode: '0644'
+  register: systemd_unit
+
+- name: systemd デーモンをリロード
+  systemd:
+    daemon_reload: yes
+  when: systemd_unit.changed
+
+- name: Immich サービスを有効化
+  systemd:
+    name: immich
+    enabled: yes
+
+- name: Immich サービス起動（初回のみ、または設定更新時）
+  systemd:
+    name: immich
+    state: restarted
+  when: compose_download.changed or env_config.changed
+
+# ====================
+# 6. SSH セキュリティ設定
+# ====================
+
+- name: SSH パスワード認証を無効化
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+  register: sshd_config
+
+- name: SSH サービス再起動
+  systemd:
+    name: ssh
+    state: restarted
+  when: sshd_config.changed
+
+# ====================
+# 7. 自動アップデート設定
+# ====================
+
+- name: unattended-upgrades パッケージがインストール済みか確認
+  shell: "dpkg -l | grep unattended-upgrades"
+  register: unattended_check
+  failed_when: false
+  changed_when: false
+
+- name: unattended-upgrades 設定
+  block:
+    - name: unattended-upgrades の設定ファイルを確認
+      stat:
+        path: /etc/apt/apt.conf.d/50unattended-upgrades
+      register: unattended_config
+
+    - name: unattended-upgrades を有効化（既に有効な場合はスキップ）
+      lineinfile:
+        path: /etc/apt/apt.conf.d/50unattended-upgrades
+        regexp: '^APT::Periodic::Update-Package-Lists'
+        line: 'APT::Periodic::Update-Package-Lists "1";'
+        state: present
+      when: unattended_config.stat.exists
+
+# ====================
+# 8. Immich ヘルスチェック（オプション）
+# ====================
+
+- name: Docker Compose が起動しているか確認（数秒待機）
+  pause:
+    seconds: 3
+
+- name: Immich コンテナの状態を確認
+  shell: "cd {{ immich_app_dir }} && docker compose ps"
+  register: compose_status
+  become: yes
+  become_user: "{{ immich_user }}"
+  changed_when: false
+  failed_when: false
+
+- name: Immich サービス状態をログ出力
+  debug:
+    var: compose_status.stdout_lines

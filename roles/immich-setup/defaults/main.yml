@@ -1,0 +1,38 @@
+# Immich Setup - Default Variables
+
+# ユーザー情報
+immich_user: immich
+immich_group: www-data
+immich_uid: 33
+
+# ディレクトリ設定
+immich_home_dir: /home/immich
+immich_app_dir: "{{ immich_home_dir }}/immich-app"
+immich_data_mount_point: /mnt/immich-data
+
+# NFS マウント設定
+nfs_server: 10.0.20.10
+nfs_export_path: /mnt/pool4tb1/media/immich_photo
+nfs_mount_opts: defaults
+
+# タイムゾーン
+timezone: Asia/Tokyo
+
+# APT キャッシュサーバー
+apt_cache_server: apt.int.sirosuzu.net
+apt_cache_port: 3142
+
+# Docker 設定
+docker_compose_version: latest
+
+# Immich 環境変数
+immich_upload_location: "{{ immich_data_mount_point }}"
+immich_server_url: https://immich.int.sirosuzu.net
+immich_db_password: "{{ vault_immich_db_password | default('ChangeMeToStrongPassword') }}"
+
+# Immich systemd サービス設定
+immich_service_restart_policy: always
+
+# SSL 証明書設定（オプション）
+immich_ssl_cert_path: /etc/ssl/certs/immich.crt
+immich_ssl_key_path: /etc/ssl/private/immich.key

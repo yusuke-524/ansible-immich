@@ -1,0 +1,29 @@
+# グループ変数 - Immich サーバー用
+# 環境に応じてカスタマイズしてください
+
+# ユーザー情報
+immich_user: immich
+immich_group: www-data
+
+# ホスト名
+immich_vm_hostname: pve-immich
+
+# ネットワーク設定
+immich_ip: 10.0.20.13
+immich_subnet: 10.0.20.0/24
+immich_gateway: 10.0.20.1
+immich_dns: 10.0.20.1
+
+# NFS マウント設定
+nfs_server: 10.0.20.10
+nfs_export_path: /mnt/pool4tb1/media/immich_photo
+
+# Immich 設定
+immich_server_url: https://immich.int.sirosuzu.net
+
+# APT キャッシュサーバー
+apt_cache_server: apt.int.sirosuzu.net
+apt_cache_port: 3142
+
+# タイムゾーン
+timezone: Asia/Tokyo

@@ -1,0 +1,49 @@
+# Immich 環境設定ファイル (.env)
+# このテンプレートは Ansible によって自動生成されます
+
+# ====================
+# Docker Compose 設定
+# ====================
+COMPOSE_PROJECT_NAME=immich
+
+# ====================
+# データストレージ設定
+# ====================
+# TrueNAS NFS マウントパス
+UPLOAD_LOCATION={{ immich_upload_location }}
+
+# ====================
+# タイムゾーン設定
+# ====================
+TZ={{ timezone }}
+
+# ====================
+# PostgreSQL データベース設定
+# ====================
+# 強力なパスワードに変更してください
+DB_PASSWORD={{ immich_db_password }}
+DB_HOSTNAME=immich-db
+DB_USERNAME=postgres
+DB_DATABASE_NAME=immich
+
+# ====================
+# Redis 設定
+# ====================
+REDIS_HOSTNAME=immich-redis
+
+# ====================
+# Immich サーバー設定
+# ====================
+# 外部アクセス用 URL
+IMMICH_SERVER_URL={{ immich_server_url }}
+
+# ====================
+# ログレベル設定
+# ====================
+LOG_LEVEL=log
+
+# ====================
+# マシン学習設定（オプション）
+# ====================
+# 機械学習モデルのダウンロード場所
+IMMICH_MACHINE_LEARNING_ENABLED=true
