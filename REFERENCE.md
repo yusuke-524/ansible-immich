@@ -12,19 +12,31 @@ ansible-immich/
 ├── 📄 QUICKSTART.md                 # クイックスタート
 ├── 📄 SETUP_GUIDE.md                # 詳細セットアップガイド
 ├── 📁 inventories/
-```bash
-# Immich — Reference (commands)
+│   └── hosts.ini                    # ホストインベントリ
+├── 📁 group_vars/
+│   ├── immich_servers.yml           # グループ変数
+│   └── immich_servers/
+│       └── vault.yml                # Vault（機密情報）
+└── 📁 roles/
+    └── immich-setup/                # immich-setup ロール
+        ├── tasks/
+        ├── defaults/
+        ├── templates/
+        └── README.md
+```
 
-このファイルはよく使うコマンドだけを短くまとめたリファレンスです。詳細は `SETUP_GUIDE.md` を参照してください。
+# Immich — 実行リファレンス（抜粋）
 
-インベントリ例:
+よく使うコマンドだけをまとめた短いリファレンスです。詳細は `SETUP_GUIDE.md` を参照してください。
+
+インベントリ例
 
 ```ini
 [immich_servers]
 immich_vm ansible_host=10.0.20.13 ansible_user=immich
 ```
 
-基本コマンド:
+主要コマンド
 
 ```bash
 # 構文チェック
@@ -33,44 +45,40 @@ ansible-playbook immich-setup.yml --syntax-check
 # 接続確認
 ansible all -i inventories/hosts.ini -m ping
 
-# ドライラン
+# ドライラン（実行シミュレーション）
 ansible-playbook immich-setup.yml --check
 
-# 本実行（Vault利用時は --ask-vault-pass など）
+# 本実行（Vault 利用時は --ask-vault-pass）
 ansible-playbook -i inventories/hosts.ini immich-setup.yml --ask-vault-pass
 
-# Vault 作成
+# Vault の作成/編集
 ansible-vault create group_vars/immich_servers/vault.yml
+ansible-vault edit group_vars/immich_servers/vault.yml
 
-# サービス確認（実行後）
+# 実行後の確認（VM 側）
 ssh immich@10.0.20.13 'sudo systemctl status immich'
-
-# Docker Compose 状態
 ssh immich@10.0.20.13 'cd ~/immich-app && docker compose ps'
-
-# NFS マウント確認
 ssh immich@10.0.20.13 'mount | grep immich-data'
 ```
 
-トラブルシュートのためのショートカット:
+トラブルシュート用ショートカット
 
 ```bash
 # 詳細ログ
 ansible-playbook immich-setup.yml -vvv
 
-# 特定タスク開始
+# 特定タスクから開始
 ansible-playbook immich-setup.yml --start-at-task="NFS マウントポイントを作成"
 
 # タスクをスキップ
 ansible-playbook immich-setup.yml --skip-tags "ssh"
 ```
 
-チェックリスト（要確認）:
+チェック（実行前）
 - SSH キーが登録されている
-- `inventories/hosts.ini` の IP が正しい
+- `inventories/hosts.ini` の IP を確認
 - `group_vars/immich_servers.yml` を環境に合わせて編集
 - Vault に DB パスワードを設定（推奨）
 
 ----
-詳細や背景、手順の理由は `SETUP_GUIDE.md` に集約しています。
-mount | grep immich-data
+詳細や背景、手順の理由は `SETUP_GUIDE.md` を参照してください。

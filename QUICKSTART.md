@@ -45,32 +45,34 @@ chmod 600 .vault_pass
 `inventories/hosts.ini` を確認：
 
 
-# Immich: Quickstart (minimal)
+# Immich — クイックスタート
 
-最短でセットアップするための最小手順のみを載せます。詳細は `SETUP_GUIDE.md` を参照してください。
+ここでは最短で環境を立ち上げるための最小手順だけを示します。手順の背景や詳細、トラブルシューティングは `SETUP_GUIDE.md` を参照してください。
 
-1) インベントリを編集（`inventories/hosts.ini`）
+1) インベントリを編集
+
+`inventories/hosts.ini` を開き、ターゲット VM の IP とユーザーを設定します。
 
 ```ini
 [immich_servers]
 immich_vm ansible_host=10.0.20.13 ansible_user=immich
 ```
 
-2) Vault（任意だが推奨）
+2) Vault（機密情報の管理、推奨）
 
 ```bash
 ansible-vault create group_vars/immich_servers/vault.yml
 # 例: vault_immich_db_password: "<strong-password>"
 ```
 
-3) 構文チェック / 接続確認
+3) 構文チェックと接続確認
 
 ```bash
 ansible-playbook immich-setup.yml --syntax-check
 ansible all -i inventories/hosts.ini -m ping
 ```
 
-4) 実行
+4) Playbook 実行
 
 ```bash
 ansible-playbook -i inventories/hosts.ini immich-setup.yml --ask-vault-pass
@@ -86,5 +88,4 @@ mount | grep immich-data
 ```
 
 ----
-このファイルは最小手順に特化しています。手順の背景や詳細・トラブルシューティングは `SETUP_GUIDE.md` にまとめています。
-# SSH 接続テスト
+短くまとまった手順のみを載せています。詳細な手順やトラブルシューティングは `SETUP_GUIDE.md` を参照してください。
