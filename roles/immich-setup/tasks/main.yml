@@ -52,6 +52,13 @@
     owner: "{{ immich_user }}"
     group: "{{ immich_group }}"
     mode: '0755'
+  ignore_errors: yes
+  register: mount_point_result
+
+- name: NFS マウントポイントの所有権変更に失敗（NFS root_squash の場合は無視）
+  debug:
+    msg: "Note: Unable to change ownership of {{ immich_data_mount_point }} (likely due to NFS root_squash). If permissions are already correct on the NFS server, this is safe to ignore."
+  when: mount_point_result is failed
 
 - name: NFS マウント情報を /etc/fstab に追加
   lineinfile:
@@ -72,6 +79,23 @@
   register: mount_check
   failed_when: mount_check.rc != 0
   changed_when: false
+
+- name: PostgreSQL データディレクトリを作成
+  file:
+    path: "{{ immich_db_data_location }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+  become: yes
+
+- name: PostgreSQL データディレクトリの所有者を postgres UID に設定
+  file:
+    path: "{{ immich_db_data_location }}"
+    owner: 999
+    group: 999
+    mode: '0700'
+  become: yes
 
 # ====================
 # 3. Docker インストール
@@ -136,6 +160,7 @@
     owner: "{{ immich_user }}"
     group: "{{ immich_group }}"
     mode: '0600'
+    backup: yes
   register: env_config
 
 # ====================

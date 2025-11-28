@@ -9,6 +9,9 @@ immich_uid: 33
 immich_home_dir: /home/immich
 immich_app_dir: "{{ immich_home_dir }}/immich-app"
 immich_data_mount_point: /mnt/immich-data
+# デフォルトではデータベースのデータはローカルストレージに配置する
+# (NFS はユーザーデータ専用とするため)
+immich_db_data_location: /var/lib/immich-db
 
 # NFS マウント設定
 nfs_server: 10.0.20.10

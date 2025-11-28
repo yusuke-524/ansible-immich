@@ -8,6 +8,7 @@ secrets/
 credentials/
 *.pem
 *.key
+.vault_pass
 
 # 個人情報を含むドキュメント
 docs_private/
