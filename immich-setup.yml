@@ -6,6 +6,9 @@
   hosts: immich_servers
   become: yes
   gather_facts: yes
+  
+  vars_files:
+    - "group_vars/immich_servers.yml"
 
   roles:
     - immich-setup

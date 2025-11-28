@@ -6,9 +6,11 @@ immich_user: immich
 immich_group: www-data
 
 # ホスト名
+#immich_vm_hostname: pve-immich
 immich_vm_hostname: immich-ansible-test
 
 # ネットワーク設定
+#immich_ip: 10.0.20.13
 immich_ip: 10.0.20.100
 immich_subnet: 10.0.20.0/24
 immich_gateway: 10.0.20.1
@@ -16,9 +18,11 @@ immich_dns: 10.0.20.1
 
 # NFS マウント設定
 nfs_server: 10.0.20.10
+#nfs_export_path: /mnt/pool4tb1/media/immich_photo
 nfs_export_path: /mnt/pool4tb1/test/test_nfs
 
 # Immich 設定
+#immich_server_url: https://immich.int.sirosuzu.net
 immich_server_url: http://10.0.20.100
 
 # APT キャッシュサーバー

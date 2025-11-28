@@ -1,6 +1,17 @@
 ---
 # Tasks for Immich Setup
 
+- name: NFSパスの確認
+  debug:
+    msg: "Using NFS server {{ nfs_server }} and export path {{ nfs_export_path }}"
+
+- name: NFS設定が定義されているか確認
+  assert:
+    that:
+      - nfs_server is defined and nfs_server != ""
+      - nfs_export_path is defined and nfs_export_path != ""
+    fail_msg: "nfs_server と nfs_export_path は group_vars/immich_servers.yml で定義してください"
+
 # ====================
 # 1. システム準備
 # ====================

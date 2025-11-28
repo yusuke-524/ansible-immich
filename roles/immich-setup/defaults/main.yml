@@ -13,9 +13,10 @@ immich_data_mount_point: /mnt/immich-data
 # (NFS はユーザーデータ専用とするため)
 immich_db_data_location: /var/lib/immich-db
 
-# NFS マウント設定
-nfs_server: 10.0.20.10
-nfs_export_path: /mnt/pool4tb1/media/immich_photo
+# NFS マウント設定（group_vars で上書きしてください）
+# 環境固有値は group_vars/immich_servers.yml で定義
+nfs_server: ""
+nfs_export_path: ""
 nfs_mount_opts: defaults
 
 # タイムゾーン
